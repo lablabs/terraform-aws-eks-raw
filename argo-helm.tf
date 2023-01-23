@@ -121,7 +121,7 @@ resource "kubernetes_job" "helm_argo_application_wait" {
               kubectl wait \
                 --namespace ${var.argo_namespace} \
                 --for=jsonpath='{.${container.key}}'=${container.value} \
-                --timeout=10m \
+                --timeout=${var.argo_helm_wait_timeout} \
                 application.argoproj.io ${var.helm_release_name}
               EOT
             ]
@@ -133,15 +133,14 @@ resource "kubernetes_job" "helm_argo_application_wait" {
       }
     }
 
-    backoff_limit = 6
+    backoff_limit = var.argo_helm_wait_backoff_limit
   }
 
   wait_for_completion = true
 
-  # inherited from provider for `kubernetes_manifest` default timeouts
   timeouts {
-    create = "10m"
-    update = "10m"
+    create = var.argo_helm_wait_timeout
+    update = var.argo_helm_wait_timeout
   }
 
   depends_on = [
