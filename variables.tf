@@ -33,6 +33,7 @@ variable "helm_release_name" {
   default     = "<$addon-name>"
   description = "Helm release name"
 }
+
 variable "helm_repo_url" {
   type        = string
   default     = "<helm_repo_url>"
