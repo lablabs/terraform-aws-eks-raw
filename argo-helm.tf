@@ -35,11 +35,12 @@ resource "helm_release" "argo_application" {
   ]
 }
 
-resource "kubernetes_cluster_role" "helm_argo_application_wait" {
+resource "kubernetes_role" "helm_argo_application_wait" {
   count = local.helm_argo_application_wait_enabled ? 1 : 0
 
   metadata {
     name        = "${var.helm_release_name}-argo-application-wait"
+    namespace   = var.argo_namespace
     labels      = local.argo_application_metadata.labels
     annotations = local.argo_application_metadata.annotations
   }
@@ -51,19 +52,20 @@ resource "kubernetes_cluster_role" "helm_argo_application_wait" {
   }
 }
 
-resource "kubernetes_cluster_role_binding" "helm_argo_application_wait" {
+resource "kubernetes_role_binding" "helm_argo_application_wait" {
   count = local.helm_argo_application_wait_enabled ? 1 : 0
 
   metadata {
     name        = "${var.helm_release_name}-argo-application-wait"
+    namespace   = var.argo_namespace
     labels      = local.argo_application_metadata.labels
     annotations = local.argo_application_metadata.annotations
   }
 
   role_ref {
     api_group = "rbac.authorization.k8s.io"
-    kind      = "ClusterRole"
-    name      = one(kubernetes_cluster_role.helm_argo_application_wait[*].metadata[0].name)
+    kind      = "Role"
+    name      = one(kubernetes_role.helm_argo_application_wait[*].metadata[0].name)
   }
 
   subject {
@@ -78,18 +80,18 @@ resource "kubernetes_service_account" "helm_argo_application_wait" {
 
   metadata {
     name        = "${var.helm_release_name}-argo-application-wait"
-    namespace   = var.namespace
+    namespace   = var.argo_namespace
     labels      = local.argo_application_metadata.labels
     annotations = local.argo_application_metadata.annotations
   }
 }
 
-resource "kubernetes_job" "application_wait" {
+resource "kubernetes_job" "helm_argo_application_wait" {
   count = local.helm_argo_application_wait_enabled ? 1 : 0
 
   metadata {
     name        = "${var.helm_release_name}-argo-application-wait"
-    namespace   = var.namespace
+    namespace   = var.argo_namespace
     labels      = local.argo_application_metadata.labels
     annotations = local.argo_application_metadata.annotations
   }
