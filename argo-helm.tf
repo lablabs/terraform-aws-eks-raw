@@ -1,6 +1,10 @@
 locals {
   helm_argo_application_enabled      = var.enabled && var.argo_enabled && var.argo_helm_enabled
   helm_argo_application_wait_enabled = local.helm_argo_application_enabled && length(keys(var.argo_kubernetes_manifest_wait_fields)) > 0
+  helm_argo_application_values = [
+    one(data.utils_deep_merge_yaml.argo_helm_values[*].output),
+    var.argo_helm_values
+  ]
 }
 
 data "utils_deep_merge_yaml" "argo_helm_values" {
@@ -29,10 +33,7 @@ resource "helm_release" "argo_application" {
   name      = var.helm_release_name
   namespace = var.argo_namespace
 
-  values = [
-    data.utils_deep_merge_yaml.argo_helm_values[0].output,
-    var.argo_helm_values
-  ]
+  values = local.helm_argo_application_values
 }
 
 resource "kubernetes_role" "helm_argo_application_wait" {
@@ -111,7 +112,7 @@ resource "kubernetes_job" "helm_argo_application_wait" {
           for_each = var.argo_kubernetes_manifest_wait_fields
 
           content {
-            name    = lower(replace(container.key, ".", "-"))
+            name    = "${lower(replace(container.key, ".", "-"))}-${md5(jsonencode(local.helm_argo_application_values))}" # md5 suffix is a workaround for https://github.com/hashicorp/terraform-provider-kubernetes/issues/1325
             image   = "bitnami/kubectl:latest"
             command = ["/bin/bash", "-ecx"]
             # Waits for ArgoCD Application to be "Healthy", see https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#wait
