@@ -33,6 +33,7 @@ variable "helm_release_name" {
   default     = "<$addon-name>"
   description = "Helm release name"
 }
+
 variable "helm_repo_url" {
   type        = string
   default     = "<helm_repo_url>"
@@ -143,6 +144,18 @@ variable "argo_helm_enabled" {
   type        = bool
   default     = false
   description = "If set to true, the ArgoCD Application manifest will be deployed using Kubernetes provider as a Helm release. Otherwise it'll be deployed as a Kubernetes manifest. See Readme for more info"
+}
+
+variable "argo_helm_wait_timeout" {
+  type        = string
+  default     = "10m"
+  description = "Timeout for ArgoCD Application Helm release wait job"
+}
+
+variable "argo_helm_wait_backoff_limit" {
+  type        = number
+  default     = 6
+  description = "Backoff limit for ArgoCD Application Helm release wait job"
 }
 
 variable "argo_destination_server" {
