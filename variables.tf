@@ -92,7 +92,7 @@ variable "irsa_role_create" {
 
 variable "irsa_policy_enabled" {
   type        = bool
-  default     = true
+  default     = false
   description = "Whether to create opinionated policy to allow operations on specified zones in `policy_allowed_zone_ids`."
 }
 

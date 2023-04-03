@@ -5,27 +5,7 @@ locals {
 data "aws_iam_policy_document" "this" {
   count = local.irsa_role_create && var.irsa_policy_enabled && !var.irsa_assume_role_enabled ? 1 : 0
 
-  # Example statement (modify it before using this module)
-  statement {
-    sid = "Autoscaling"
-
-    actions = [
-      "autoscaling:DescribeAutoScalingGroups",
-      "autoscaling:DescribeAutoScalingInstances",
-      "autoscaling:DescribeLaunchConfigurations",
-      "autoscaling:DescribeTags",
-      "autoscaling:SetDesiredCapacity",
-      "autoscaling:TerminateInstanceInAutoScalingGroup",
-      "ec2:DescribeLaunchTemplateVersions",
-      "ec2:DescribeInstanceTypes"
-    ] # checkov:skip=CKV_AWS_111
-
-    resources = [
-      "*",
-    ]
-
-    effect = "Allow"
-  }
+  statement {}
 }
 
 data "aws_iam_policy_document" "this_assume" {
@@ -48,7 +28,7 @@ resource "aws_iam_policy" "this" {
 
   name        = "${var.irsa_role_name_prefix}-${var.helm_release_name}"
   path        = "/"
-  description = "Policy for raw service"
+  description = "Policy for custom service"
   policy      = var.irsa_assume_role_enabled ? data.aws_iam_policy_document.this_assume[0].json : data.aws_iam_policy_document.this[0].json
 
   tags = var.irsa_tags
@@ -86,7 +66,7 @@ resource "aws_iam_role" "this" {
 }
 
 resource "aws_iam_role_policy_attachment" "this" {
-  count      = local.irsa_role_create && var.irsa_policy_enabled ? 1 : 0
+  count      = local.irsa_role_create && (var.irsa_policy_enabled || var.irsa_assume_role_enabled) ? 1 : 0
   role       = aws_iam_role.this[0].name
   policy_arn = aws_iam_policy.this[0].arn
 }
