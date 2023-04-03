@@ -18,7 +18,7 @@ variable "cluster_identity_oidc_issuer_arn" {
 
 variable "helm_chart_name" {
   type        = string
-  default     = "raw"
+  default     = "bedag/raw"
   description = "Helm chart name to be installed"
 }
 
